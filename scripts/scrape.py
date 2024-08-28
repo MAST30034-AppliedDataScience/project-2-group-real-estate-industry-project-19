@@ -12,7 +12,7 @@ from fake_useragent import UserAgent
 
 # constants
 BASE_URL = "https://www.domain.com.au"
-N_PAGES = range(1, 5)  
+N_PAGES = range(1, 500)  
 OUTPUT_FILE = '../data/raw/example.json'
 
 # initalizing fake user agent
@@ -47,7 +47,7 @@ def fetch_property_links(pages):
         try:
             headers = get_random_headers()
             print("Sending request to server...")
-            bs_object = BeautifulSoup(urlopen(Request(url, headers=headers), timeout=10), "lxml")
+            bs_object = BeautifulSoup(urlopen(Request(url, headers=headers), timeout=100), "lxml")
             print("Successfully received response.")
             index_links = bs_object.find("ul", {"data-testid": "results"}).findAll(
                 "a", href=re.compile(f"{BASE_URL}/*")
