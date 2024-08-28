@@ -144,7 +144,7 @@ def save_data(data, output_file):
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, 'w') as f:
         dump(data, f)
-    print(f"Data successfully saved to {output_file}.")
+    print(f"Data successfully save to {output_file}.")
 
 # main execution
 if __name__ == "__main__":
