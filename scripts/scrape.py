@@ -18,6 +18,16 @@ OUTPUT_FILE = 'data/raw/rental_scrape.json'
 # initalizing fake user agent
 ua = UserAgent()
 
+def get_random_headers():
+    """
+    Generates a random headers dictionary with a rotating user-agent.
+    
+    Returns:
+    dict: A dictionary containing HTTP headers with a random user-agent.
+    """
+    headers = {'User-Agent': ua.random}
+    print(f"Using User-Agent: {headers['User-Agent']}")
+    return headers
 
 def fetch_property_links(pages):
     """
@@ -36,7 +46,7 @@ def fetch_property_links(pages):
         print(f"Visiting {url}")
         try:
             print("Sending request to server...")
-            bs_object = BeautifulSoup(urlopen(Request(url, headers={'User-Agent':"PostmanRuntime/7.6.0"})), "lxml")
+            bs_object = BeautifulSoup(urlopen(Request(url, headers=headers), timeout=100), "lxml")
             print("Successfully received response.")
             index_links = bs_object.find("ul", {"data-testid": "results"}).findAll(
                 "a", href=re.compile(f"{BASE_URL}/*")
@@ -80,7 +90,8 @@ def scrape_property_data(url_links):
         while retry_count < max_retries:
             print(f"Scraping {property_url} (Attempt {retry_count + 1}/{max_retries})")
             try:
-                bs_object = BeautifulSoup(urlopen(Request(property_url, headers={'User-Agent':"PostmanRuntime/7.6.0"}), timeout=30), "lxml")
+                headers = get_random_headers()
+                bs_object = BeautifulSoup(urlopen(Request(property_url, headers=headers)), "lxml")
                 total_count += 1
 
                 # finding property name
