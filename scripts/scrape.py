@@ -12,22 +12,12 @@ from fake_useragent import UserAgent
 
 # constants
 BASE_URL = "https://www.domain.com.au"
-N_PAGES = range(1, 500)  
-OUTPUT_FILE = '../data/raw/example.json'
+N_PAGES = range(1, 50)  
+OUTPUT_FILE = 'data/raw/rental_scrape.json'
 
 # initalizing fake user agent
 ua = UserAgent()
 
-def get_random_headers():
-    """
-    Generates a random headers dictionary with a rotating user-agent.
-    
-    Returns:
-    dict: A dictionary containing HTTP headers with a random user-agent.
-    """
-    headers = {'User-Agent': ua.random}
-    print(f"Using User-Agent: {headers['User-Agent']}")
-    return headers
 
 def fetch_property_links(pages):
     """
@@ -45,9 +35,8 @@ def fetch_property_links(pages):
         url = BASE_URL + f"/rent/melbourne-region-vic/?sort=price-desc&page={page}"
         print(f"Visiting {url}")
         try:
-            headers = get_random_headers()
             print("Sending request to server...")
-            bs_object = BeautifulSoup(urlopen(Request(url, headers=headers), timeout=100), "lxml")
+            bs_object = BeautifulSoup(urlopen(Request(url, headers={'User-Agent':"PostmanRuntime/7.6.0"})), "lxml")
             print("Successfully received response.")
             index_links = bs_object.find("ul", {"data-testid": "results"}).findAll(
                 "a", href=re.compile(f"{BASE_URL}/*")
@@ -91,8 +80,7 @@ def scrape_property_data(url_links):
         while retry_count < max_retries:
             print(f"Scraping {property_url} (Attempt {retry_count + 1}/{max_retries})")
             try:
-                headers = get_random_headers()
-                bs_object = BeautifulSoup(urlopen(Request(property_url, headers=headers)), "lxml")
+                bs_object = BeautifulSoup(urlopen(Request(property_url, headers={'User-Agent':"PostmanRuntime/7.6.0"}), timeout=30), "lxml")
                 total_count += 1
 
                 # finding property name
@@ -132,6 +120,25 @@ def scrape_property_data(url_links):
     print("Finished scraping property data.")
     return property_metadata
 
+def is_json_file_empty(file_path):
+    """
+    Checks if a JSON file is empty.
+
+    Parameters: 
+    file_path: the path to the JSON file.
+
+    Returns:
+    bool: True if the file is empty or only contains whitespace, otherwise False.
+    """
+
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            content = file.read().strip()  
+            return len(content) == 0  
+    else:
+        print("File does not exist.")
+        return True  
+
 def save_data(data, output_file):
     """
     Saves scraped property metadata to a JSON file.
@@ -140,11 +147,24 @@ def save_data(data, output_file):
     data: dict containing property metadata to save.
     output_file: the path where the JSON file will be saved.
     """
-    print(f"Saving data to {output_file}...")
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, 'w') as f:
-        dump(data, f)
-    print(f"Data successfully save to {output_file}.")
+    try:
+        print(f"Saving data to {output_file}...")
+
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+        with open(output_file, 'w') as f:
+            dump(data, f)
+
+        print(f"Data successfully save to {output_file}.")
+
+        #checking if empty
+        if is_json_file_empty(output_file):
+            print(f"Warning: The JSON file at {output_file} is empty.")
+        else:
+            print(f"The JSON file at {output_file} is not empty.")
+    
+    except Exception as e:
+        print(f"An error occurred while saving data: {e}")
 
 # main execution
 if __name__ == "__main__":
