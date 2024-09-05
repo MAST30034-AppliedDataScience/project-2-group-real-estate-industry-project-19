@@ -11,12 +11,12 @@ from bs4 import BeautifulSoup
 
 # constants
 BASE_URL = "https://www.domain.com.au"
-SUBURBS = ['ashburton-vic-3147']
-''', 'balwyn-north-vic-3104','balwyn-vic-3103', 'camberwell-vic-3124', 'glen-iris-vic-3146', 'hawthorn-east-vic-3123',
+SUBURBS = ['ashburton-vic-3147', 'balwyn-north-vic-3104','balwyn-vic-3103', 'camberwell-vic-3124', 'glen-iris-vic-3146', 'hawthorn-east-vic-3123',
            'kew-east-vic-3102', 'surrey-hills-vic-3127', 'hawthorn-vic-3122', 'kew-vic-3101', 'bulleen-vic-3105', 'doncaster-vic-3108',
            'templestowe-vic-3106', 'templestowe-lower-vic-3107','doncaster-east-vic-3109','blackburn-vic-3130','blackburn-south-vic-3130','blackburn-north-vic-3130',
-           'box-hill-vic-3128','box-hill-south-vic-3128','box-hill-north-vic-3129','burwood-vic-3125','burwood-east-vic-3151','mont-albert-vic-3127'''
-N_PAGES = range(1, 15)  
+           'box-hill-vic-3128','box-hill-south-vic-3128','box-hill-north-vic-3129','burwood-vic-3125','burwood-east-vic-3151','mont-albert-vic-3127']
+
+N_PAGES = range(1, 25)  
 OUTPUT_FILE = 'data/landing/rental_scrape.csv'
 
 
@@ -100,7 +100,7 @@ def scrape_property_data(url_links):
                 total_count += 1
 
                 # Extract property details
-                name = bs_object.find("h1", {"class": "css-164r41r"}).text if bs_object.find("h1", {"class": "css-164r41r"}) else 'N/A'
+                address = bs_object.find("h1", {"class": "css-164r41r"}).text if bs_object.find("h1", {"class": "css-164r41r"}) else 'N/A'
                 cost_text = bs_object.find("div", {"data-testid": "listing-details__summary-title"}).text if bs_object.find("div", {"data-testid": "listing-details__summary-title"}) else 'N/A'
                 rooms = bs_object.find("div", {"data-testid": "property-features"}).findAll("span", {"data-testid": "property-features-text-container"})
                 bed_info = [re.findall(r'\d+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Bed' in feature.text]
@@ -108,8 +108,6 @@ def scrape_property_data(url_links):
                 parking_info = [re.findall(r'\S+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Parking' in feature.text]
                 desc_element = bs_object.find("p")
                 desc = re.sub(r'<br\/>', '\n', str(desc_element)).strip('</p>') if desc_element else 'N/A'
-                address_element = bs_object.find("span", {"class": "css-class-for-address"})
-                address = address_element.text if address_element else 'Address not found'
                 property_type_element = bs_object.find("div", {"data-testid":"listing-summary-property-type"})
                 property_type = property_type_element.find("span").text.strip() if property_type_element else 'N/A'
 
@@ -117,7 +115,7 @@ def scrape_property_data(url_links):
                 # Collect data
                 all_properties.append({
                     'URL': property_url,
-                    'Name': name,
+                    'Address': address,
                     'Cost': cost_text,
                     'Bedrooms': ', '.join(bed_info),
                     'Bathrooms': ', '.join(bath_info),

@@ -44,7 +44,7 @@ def test_urls(pages, suburbs):
     # Loop through each suburb and page number
     for suburb in suburbs:
         for page in pages:
-            url = f"{BASE_URL}{suburb}/rent/{page}"
+            url = f"{BASE_URL}{suburb}/buy/{page}"
             print(f"Visiting {url}")
             try:
                 print("Sending request to server...")
@@ -112,6 +112,7 @@ def scrape_oldlistings_data(urls):
                     beds = listing.find('p', class_='property-meta bed').text.strip() if listing.find('p', class_='property-meta bed') else 'N/A'
                     baths = listing.find('p', class_='property-meta bath').text.strip() if listing.find('p', class_='property-meta bath') else 'N/A'
                     cars = listing.find('p', class_='property-meta car').text.strip() if listing.find('p', class_='property-meta car') else 'N/A'
+                    land = listing.find('p', class_='property-meta land').text.strip() if listing.find('p', class_='property-meta land') else 'N/A'
                     property_type = listing.find('p', class_='property-meta type').text.strip() if listing.find('p', class_='property-meta type') else 'N/A'               
 
                     # Extract historical prices
@@ -129,6 +130,7 @@ def scrape_oldlistings_data(urls):
                         'Beds': beds,
                         'Baths': baths,
                         'Cars': cars,
+                        'Land': land,
                         'Property Type': property_type,
                         'Historical Prices': '; '.join(historical_prices)
                     })
@@ -178,7 +180,7 @@ def save_data_to_csv(data, filename):
 # Test the scraping on the specified URL
 urls = test_urls(N_PAGES, SUBURBS)
 property_data = scrape_oldlistings_data(urls)
-save_data_to_csv(property_data, 'data/landing/rental_history_scrape1.csv')
+save_data_to_csv(property_data, 'data/landing/sale_history_scrape1.csv')
 urls = test_urls(N_PAGES, SUBURBS2)
 property_data = scrape_oldlistings_data(urls)
-save_data_to_csv(property_data, 'data/landing/rental_history_scrape2.csv')
+save_data_to_csv(property_data, 'data/landing/sale_history_scrape2.csv')
