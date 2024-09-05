@@ -11,11 +11,12 @@ from bs4 import BeautifulSoup
 
 # constants
 BASE_URL = "https://www.domain.com.au"
-SUBURBS = ['ashburton-vic-3147', 'balwyn-north-vic-3104','balwyn-vic-3103', 'camberwell-vic-3124', 'glen-iris-vic-3146', 'hawthorn-east-vic-3123',
+SUBURBS = ['ashburton-vic-3147']
+''', 'balwyn-north-vic-3104','balwyn-vic-3103', 'camberwell-vic-3124', 'glen-iris-vic-3146', 'hawthorn-east-vic-3123',
            'kew-east-vic-3102', 'surrey-hills-vic-3127', 'hawthorn-vic-3122', 'kew-vic-3101', 'bulleen-vic-3105', 'doncaster-vic-3108',
            'templestowe-vic-3106', 'templestowe-lower-vic-3107','doncaster-east-vic-3109','blackburn-vic-3130','blackburn-south-vic-3130','blackburn-north-vic-3130',
-           'box-hill-vic-3128','box-hill-south-vic-3128','box-hill-north-vic-3129','burwood-vic-3125','burwood-east-vic-3151','mont-albert-vic-3127']
-N_PAGES = range(1, 25)  
+           'box-hill-vic-3128','box-hill-south-vic-3128','box-hill-north-vic-3129','burwood-vic-3125','burwood-east-vic-3151','mont-albert-vic-3127'''
+N_PAGES = range(1, 15)  
 OUTPUT_FILE = 'data/landing/rental_scrape.csv'
 
 
@@ -102,22 +103,28 @@ def scrape_property_data(url_links):
                 name = bs_object.find("h1", {"class": "css-164r41r"}).text if bs_object.find("h1", {"class": "css-164r41r"}) else 'N/A'
                 cost_text = bs_object.find("div", {"data-testid": "listing-details__summary-title"}).text if bs_object.find("div", {"data-testid": "listing-details__summary-title"}) else 'N/A'
                 rooms = bs_object.find("div", {"data-testid": "property-features"}).findAll("span", {"data-testid": "property-features-text-container"})
-                rooms_info = [re.findall(r'\d+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Bed' in feature.text or 'Bath' in feature.text]
+                bed_info = [re.findall(r'\d+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Bed' in feature.text]
+                bath_info = [re.findall(r'\d+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Bath' in feature.text]
                 parking_info = [re.findall(r'\S+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Parking' in feature.text]
                 desc_element = bs_object.find("p")
                 desc = re.sub(r'<br\/>', '\n', str(desc_element)).strip('</p>') if desc_element else 'N/A'
                 address_element = bs_object.find("span", {"class": "css-class-for-address"})
                 address = address_element.text if address_element else 'Address not found'
+                property_type_element = bs_object.find("div", {"data-testid":"listing-summary-property-type"})
+                property_type = property_type_element.find("span").text.strip() if property_type_element else 'N/A'
 
+                # Collect data
                 # Collect data
                 all_properties.append({
                     'URL': property_url,
                     'Name': name,
                     'Cost': cost_text,
-                    'Rooms': ', '.join(rooms_info),
+                    'Bedrooms': ', '.join(bed_info),
+                    'Bathrooms': ', '.join(bath_info),
                     'Parking': ', '.join(parking_info),
                     'Description': desc,
-                    'Address': address
+                    'Address': address,
+                    'PropertyType': property_type
                 })
 
                 print(f"Successfully scraped data for {property_url}")
@@ -138,24 +145,6 @@ def scrape_property_data(url_links):
     print("Finished scraping property data.")
     return all_properties
 
-def is_json_file_empty(file_path):
-    """
-    Checks if a JSON file is empty.
-
-    Parameters: 
-    file_path: the path to the JSON file.
-
-    Returns:
-    bool: True if the file is empty or only contains whitespace, otherwise False.
-    """
-
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            content = file.read().strip()  
-            return len(content) == 0  
-    else:
-        print("File does not exist.")
-        return True  
 
 def save_data(data, output_file):
     """
@@ -170,7 +159,7 @@ def save_data(data, output_file):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
         # Define CSV headers
-        headers = ['URL', 'Name', 'Cost', 'Rooms', 'Parking', 'Description', 'Address']
+        headers = ['URL', 'Name', 'Cost', 'Bedrooms', 'Bathrooms', 'Parking', 'Description', 'Address', 'PropertyType']
 
         with open(output_file, 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=headers)

@@ -120,9 +120,12 @@ def scrape_oldlistings_data(urls):
 
                     # Extract historical prices
                     historical_prices = []
-                    historical_price_tags = listing.find_all('div', class_='historical-price')
-                    for tag in historical_price_tags:
-                        historical_prices.append(tag.text.strip())
+                    historical_price_section = listing.find_all('section', class_='grid-100 historical-price')
+
+                    if historical_price_section:
+                        historical_price_tags = historical_price_section.find_all('li')
+                        for tag in historical_price_tags:
+                            historical_prices.append(tag.text.strip())
 
                     # Add data to property dictionary
                     all_properties.append({
