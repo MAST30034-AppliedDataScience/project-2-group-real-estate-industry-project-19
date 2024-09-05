@@ -2,34 +2,24 @@ import re
 import os
 import time
 import random
-from json import dump
+import csv
 from tqdm import tqdm
 from collections import defaultdict
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 
 # constants
 BASE_URL = "https://www.domain.com.au"
-N_PAGES = range(1, 50)  
-OUTPUT_FILE = 'data/raw/rental_scrape.json'
+SUBURBS = ['ashburton-vic-3147', 'balwyn-north-vic-3104','balwyn-vic-3103', 'camberwell-vic-3124', 'glen-iris-vic-3146', 'hawthorn-east-vic-3123',
+           'kew-east-vic-3102', 'surrey-hills-vic-3127', 'hawthorn-vic-3122', 'kew-vic-3101', 'bulleen-vic-3105', 'doncaster-vic-3108',
+           'templestowe-vic-3106', 'templestowe-lower-vic-3107','doncaster-east-vic-3109','blackburn-vic-3130','blackburn-south-vic-3130','blackburn-north-vic-3130',
+           'box-hill-vic-3128','box-hill-south-vic-3128','box-hill-north-vic-3129','burwood-vic-3125','burwood-east-vic-3151','mont-albert-vic-3127']
+N_PAGES = range(1, 25)  
+OUTPUT_FILE = 'data/landing/rental_scrape.csv'
 
-# initalizing fake user agent
-ua = UserAgent()
 
-def get_random_headers():
-    """
-    Generates a random headers dictionary with a rotating user-agent.
-    
-    Returns:
-    dict: A dictionary containing HTTP headers with a random user-agent.
-    """
-    headers = {'User-Agent': ua.random}
-    print(f"Using User-Agent: {headers['User-Agent']}")
-    return headers
-
-def fetch_property_links(pages):
+def fetch_property_links(pages, suburbs):
     """
     Fetches URLs of property listings from a specified number of pages.
 
@@ -41,32 +31,47 @@ def fetch_property_links(pages):
     """
     print("Starting to fetch property links...")
     url_links = []
-    for page in pages:
-        url = BASE_URL + f"/rent/melbourne-region-vic/?sort=price-desc&page={page}"
-        print(f"Visiting {url}")
-        try:
-            print("Sending request to server...")
-            bs_object = BeautifulSoup(urlopen(Request(url, headers=headers), timeout=100), "lxml")
-            print("Successfully received response.")
-            index_links = bs_object.find("ul", {"data-testid": "results"}).findAll(
-                "a", href=re.compile(f"{BASE_URL}/*")
-            )
-            for link in index_links:
-                if 'address' in link.get('class', []):
-                    url_links.append(link['href'])
-                    print(f"Found link: {link['href']}")
-        except HTTPError as e:
-            print(f"HTTP Error: {e.code} - {e.reason}")
-        except URLError as e:
-            print(f"URL Error: {e.reason}")
-        except Exception as e:
-            print(f"Error fetching {url}: {e}")
-        # Add random delay between requests
-        delay = random.uniform(1, 3)
-        print(f"Delaying for {delay:.2f} seconds...")
-        time.sleep(delay)
+    for suburb in suburbs:
+        for page in pages:
+            url = BASE_URL + f"/rent/{suburb}/?page={page}"
+            print(f"Visiting {url}")
+            try:
+                print("Sending request to server...")
+                bs_object = BeautifulSoup(urlopen(Request(url, headers={'User-Agent':"PostmanRuntime/7.6.0"}), timeout=100), "lxml")
+                print("Successfully received response.")
+                index_links = bs_object.find("ul", {"data-testid": "results"}).findAll(
+                    "a", href=re.compile(f"{BASE_URL}/*")
+                )
+                for link in index_links:
+                    if 'address' in link.get('class', []):
+                        url_links.append(link['href'])
+                        print(f"Found link: {link['href']}")
+            except HTTPError as e:
+                print(f"HTTP Error: {e.code} - {e.reason}")
+            except URLError as e:
+                print(f"URL Error: {e.reason}")
+            except Exception as e:
+                print(f"Error fetching {url}: {e}")
+            # Add random delay between requests
+            delay = random.uniform(1, 2)
+            print(f"Delaying for {delay:.2f} seconds...")
+            time.sleep(delay)
     print("Finished fetching property links.")
     return url_links
+
+def get_unique_urls(url_list):
+    """
+    Filters out duplicate URLs from the list.
+
+    Parameters:
+    url_list: A list of URLs.
+
+    Returns:
+    list: A list of unique URLs.
+    """
+    url_list = list(set(url_list))
+    print(f"Filtered unique URLs. Original count: {len(url_list)}, Unique count: {len(url_list)}")
+    return url_list
 
 def scrape_property_data(url_links):
     """
@@ -79,43 +84,45 @@ def scrape_property_data(url_links):
     defaultdict: a dictionary containing scraped metadata for each property.
     """
     print("Starting to scrape property data...")
-    property_metadata = defaultdict(dict)
+    all_properties = []
     success_count, total_count = 0, 0
     pbar = tqdm(url_links)
     for property_url in pbar:
         retry_count = 0
         max_retries = 3
-        backoff_time = 1  # Start with 1 second backoff
-        
+        backoff_time = 1  
+    
         while retry_count < max_retries:
             print(f"Scraping {property_url} (Attempt {retry_count + 1}/{max_retries})")
             try:
-                headers = get_random_headers()
-                bs_object = BeautifulSoup(urlopen(Request(property_url, headers=headers)), "lxml")
+                bs_object = BeautifulSoup(urlopen(Request(property_url, headers={'User-Agent': "PostmanRuntime/7.6.0"}), timeout=303), "lxml")
                 total_count += 1
 
-                # finding property name
-                property_metadata[property_url]['name'] = bs_object.find("h1", {"class": "css-164r41r"}).text
-                
-                # finding cost
-                property_metadata[property_url]['cost_text'] = bs_object.find("div", {"data-testid": "listing-details__summary-title"}).text
-                
-                # finding rooms and parking info
+                # Extract property details
+                name = bs_object.find("h1", {"class": "css-164r41r"}).text if bs_object.find("h1", {"class": "css-164r41r"}) else 'N/A'
+                cost_text = bs_object.find("div", {"data-testid": "listing-details__summary-title"}).text if bs_object.find("div", {"data-testid": "listing-details__summary-title"}) else 'N/A'
                 rooms = bs_object.find("div", {"data-testid": "property-features"}).findAll("span", {"data-testid": "property-features-text-container"})
-                property_metadata[property_url]['rooms'] = [re.findall(r'\d+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Bed' in feature.text or 'Bath' in feature.text]
-                property_metadata[property_url]['parking'] = [re.findall(r'\S+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Parking' in feature.text]
-                
-                # finding description
+                rooms_info = [re.findall(r'\d+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Bed' in feature.text or 'Bath' in feature.text]
+                parking_info = [re.findall(r'\S+\s[A-Za-z]+', feature.text)[0] for feature in rooms if 'Parking' in feature.text]
                 desc_element = bs_object.find("p")
-                property_metadata[property_url]['desc'] = re.sub(r'<br\/>', '\n', str(desc_element)).strip('</p>') if desc_element else ''
+                desc = re.sub(r'<br\/>', '\n', str(desc_element)).strip('</p>') if desc_element else 'N/A'
+                address_element = bs_object.find("span", {"class": "css-class-for-address"})
+                address = address_element.text if address_element else 'Address not found'
 
-                # finding address
-                address_element = bs_object.find("span", {"class": "css-class-for-address"})  # Adjust based on actual class/id
-                property_metadata[property_url]['address'] = address_element.text if address_element else 'Address not found'
+                # Collect data
+                all_properties.append({
+                    'URL': property_url,
+                    'Name': name,
+                    'Cost': cost_text,
+                    'Rooms': ', '.join(rooms_info),
+                    'Parking': ', '.join(parking_info),
+                    'Description': desc,
+                    'Address': address
+                })
 
                 print(f"Successfully scraped data for {property_url}")
                 success_count += 1
-                break  
+                break   
             except Exception as e:
                 print(f"Issue with {property_url}: {e}")
                 retry_count += 1
@@ -129,7 +136,7 @@ def scrape_property_data(url_links):
         pbar.set_description(f"{(success_count/total_count * 100):.0f}% successful")
     
     print("Finished scraping property data.")
-    return property_metadata
+    return all_properties
 
 def is_json_file_empty(file_path):
     """
@@ -152,34 +159,33 @@ def is_json_file_empty(file_path):
 
 def save_data(data, output_file):
     """
-    Saves scraped property metadata to a JSON file.
+    Saves scraped property metadata to a CSV file.
 
     Parameters:
-    data: dict containing property metadata to save.
-    output_file: the path where the JSON file will be saved.
+    data: list of dictionaries containing property metadata to save.
+    output_file: the path where the CSV file will be saved.
     """
     try:
         print(f"Saving data to {output_file}...")
-
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        
+        # Define CSV headers
+        headers = ['URL', 'Name', 'Cost', 'Rooms', 'Parking', 'Description', 'Address']
 
-        with open(output_file, 'w') as f:
-            dump(data, f)
+        with open(output_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(data)
 
-        print(f"Data successfully save to {output_file}.")
-
-        #checking if empty
-        if is_json_file_empty(output_file):
-            print(f"Warning: The JSON file at {output_file} is empty.")
-        else:
-            print(f"The JSON file at {output_file} is not empty.")
+        print(f"Data successfully saved to {output_file}.")
     
     except Exception as e:
         print(f"An error occurred while saving data: {e}")
 
 # main execution
 if __name__ == "__main__":
-    links = fetch_property_links(N_PAGES)
+    links = fetch_property_links(N_PAGES, SUBURBS)
+    links = get_unique_urls(links)
     metadata = scrape_property_data(links)
     save_data(metadata, OUTPUT_FILE)
 
