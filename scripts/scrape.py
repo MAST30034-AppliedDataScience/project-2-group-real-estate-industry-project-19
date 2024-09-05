@@ -12,7 +12,7 @@ from fake_useragent import UserAgent
 
 # constants
 BASE_URL = "https://www.domain.com.au"
-N_PAGES = range(1, 500)  
+N_PAGES = range(1, 50)  
 OUTPUT_FILE = 'data/raw/example.json'
 
 
