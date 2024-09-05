@@ -22,6 +22,10 @@ gdf = gpd.read_file(shapefile_path)
 victoria_gdf = gdf[gdf['STE_CODE21'] == '2']
 
 # Step 4: Plot the Victoria SA2 regions
-victoria_gdf.plot(figsize=(10, 10), edgecolor='k', color='lightblue')
+fig, ax = plt.subplots(figsize=(10, 10))
+victoria_gdf.plot(ax=ax, edgecolor='k', color='lightblue')
 plt.title('SA2 Regions in Victoria, Australia')
-plt.show()
+
+# Step 5: Save the plot to a file
+output_path = "victoria_sa2_regions.png"
+plt.savefig(output_path, dpi=300)  # Save as a PNG with 300 DPI for high quality
