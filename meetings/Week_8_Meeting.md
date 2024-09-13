@@ -17,7 +17,7 @@
     - Cleaning the scraped data
 
 -   Daniel
-    - Finding distance to houses
+    -  Finding distance to houses
     - Dataset address 
 
 -   Feiyang
