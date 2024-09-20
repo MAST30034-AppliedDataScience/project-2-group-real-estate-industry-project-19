@@ -1,6 +1,6 @@
 **Real Estate Industry Project - Industry Group 19**
 
-**Minutes:**  13 September 2024, 10:00 am
+**Minutes:**  20 September 2024, 10:00 am
 
 **Group Members:** Daniel Bi, Mary Zhang, Telia Tung, Feiyang Gu
 
@@ -36,4 +36,4 @@ Telia: Free Friday to Monday
 
 Feiyang Gu: Free Monday or Friday afternoon
 
-**Signed:** Daniel Bi, Mary Zhang, Telia Tung and Feiyang Gu (13 September 2024)
+**Signed:** Daniel Bi, Mary Zhang, Telia Tung and Feiyang Gu (20 September 2024)
