@@ -11,19 +11,21 @@ We will now build another model with just current data so that we can determine 
 
 -   Telia
     -  Joining data
-    -  Visualisations
+    -  Visualisations for points of interest
 
 -   Mary
     - Joining data
+    - Visualisations for school
     - Building new model - visualising performance
 
 -   Daniel
     - Joining data
+    - Visualising number of traing stations per suburb on map
     - Finding correlations - visualising correlations
 
 -   Feiyang
     - Joining income and population data 
-    - Making visualisations
+    - Making visualisations for income and population map
 
 
 **Commitments:**
