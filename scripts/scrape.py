@@ -12,11 +12,6 @@ from bs4 import BeautifulSoup
 # constants
 BASE_URL = "https://www.domain.com.au"
 
-#SUBURBS = ['ashburton-vic-3147', 'balwyn-north-vic-3104','balwyn-vic-3103', 'camberwell-vic-3124', 'glen-iris-vic-3146', 'hawthorn-east-vic-3123',
-#           'kew-east-vic-3102', 'surrey-hills-vic-3127', 'hawthorn-vic-3122', 'kew-vic-3101', 'bulleen-vic-3105', 'doncaster-vic-3108',
-#           'templestowe-vic-3106', 'templestowe-lower-vic-3107','doncaster-east-vic-3109','blackburn-vic-3130','blackburn-south-vic-3130','blackburn-north-vic-3130',
-#           'box-hill-vic-3128','box-hill-south-vic-3128','box-hill-north-vic-3129','burwood-vic-3125','burwood-east-vic-3151','mont-albert-vic-3127']
-
 SUBURBS = ['melbourne-vic-3000',
  'east-melbourne-vic-3002',
  'west-melbourne-vic-3003',
