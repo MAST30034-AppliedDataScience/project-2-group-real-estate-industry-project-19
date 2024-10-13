@@ -21,8 +21,12 @@ import os
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 import matplotlib.pyplot as plt
 
-# Function for SARIMA modeling and forecasting for each suburb and property type
 def forecast_sarima(df):
+    '''
+    This function takes in a time seriers dataframe and outputs a 3 year forecast using SARIMA.
+    Additionally, it plots and saves the forecast for every property type for every suburb.
+    It them returns all forecasts as a combined dataframe.
+    '''
     results = []
     no_results = 0
 
@@ -47,13 +51,8 @@ def forecast_sarima(df):
         
         subset = subset[['Rent']]
 
-        # Handle NaN values (impute or drop)
+        # Drop NaN values
         subset = subset.fillna(method='ffill').dropna()
-
-        # Ensure data is non-empty and has sufficient length
-        if subset.empty or len(subset) < 36:  # Skip if not enough data for a 3-year forecast
-            print(f"Skipping {suburb} - {prop_type} due to insufficient data")
-            continue
 
         # Fit SARIMA model
         try:
