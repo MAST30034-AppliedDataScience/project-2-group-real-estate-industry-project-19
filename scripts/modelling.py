@@ -8,20 +8,14 @@ from pmdarima import auto_arima
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_squared_error
 import seaborn as sns
-import pandas as pd
-import numpy as np
-import os
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-import matplotlib.pyplot as plt
 
-def forecast_sarima(df):
+def forecast_sarima_with_plots(df):
     '''
     This function takes in a time seriers dataframe and outputs a 3 year forecast using SARIMA.
     Additionally, it plots and saves the forecast for every property type for every suburb.
