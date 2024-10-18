@@ -10,7 +10,7 @@ See the `scrape.py` file in the `scripts` directory to get started scraping data
 **Timeline:** 
 
 To run the pipeline, please visit the `notebooks` directory and run the files in order:
-1. `download.ipynb`: This downloads the raw data into the `data/landing` directory.
+1. `download.ipynb` and `download.py`: This downloads the raw data into the `data/landing` directory.
 2. **Preprocessing**: These notebooks details all preprocessing steps and outputs it to the `data/raw` and `data/curated` directory. Does not matter which one is run first.
    1. `preprocessing_historical_rent.ipynb`: Preprocesses historical rent
    2. `preprocessing_income.ipynb`: Preprocesses income data
