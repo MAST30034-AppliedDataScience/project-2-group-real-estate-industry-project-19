@@ -1,9 +1,7 @@
 import sys
 import os
 sys.path.append('../')
-import pandas as pd
 import geopandas as gpd
-from shapely.geometry import Point
 import matplotlib.pyplot as plt
 
 def feat_sf (shapefile, feature_name, feat_type = None, feat_subtypes = None):
