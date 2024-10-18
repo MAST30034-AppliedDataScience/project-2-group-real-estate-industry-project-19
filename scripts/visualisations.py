@@ -106,8 +106,10 @@ def state_plot(state_gdf, feat_sf, feature_name, plot_title_name, if_centroid = 
         ax.set_ylim([-38.6, -37.5]) 
         # Rename plot title if zoomed in
         plt.title(f'{plot_title_name} in Victoria (Zoomed In)')
+        file_name = f"{state_plot_dir}/state_{feature_name}_map_zoomedin.png"
     else:
         plt.title(f'{plot_title_name} in Victoria')
+        file_name = f"{state_plot_dir}/state_{feature_name}_map.png"
     
     # Set plot labels
     plt.xlabel('Longitude')
@@ -115,7 +117,7 @@ def state_plot(state_gdf, feat_sf, feature_name, plot_title_name, if_centroid = 
     plt.legend()
     
     # Save the plot as a png file
-    plt.savefig(f"{state_plot_dir}/state_{feature_name}_map.png", format='png', dpi=300)
+    plt.savefig(file_name, format='png', dpi=300)
 
     return plt.show()
 
